@@ -37,6 +37,10 @@ class CustomersRepository implements ICustomersRepository {
 
     return findCustomer;
   }
+
+  public async save(customer: Customer): Promise<Customer> {
+    return this.ormRepository.save(customer);
+  }
 }
 
 export default CustomersRepository;

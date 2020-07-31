@@ -288,6 +288,21 @@ describe('App', () => {
       });
 
     const response = await request(app).get(`/orders/${order.body.id}`);
+    // console.log(response.body);
+    // console.log({
+    //   customer: {
+    //     id: customer.body.id,
+    //     name: 'Rocketseat',
+    //     email: 'oi@rocketseat.com.br',
+    //   },
+    //   order_products: [
+    //     {
+    //       product_id: product.body.id,
+    //       price: '500.00',
+    //       quantity: 5,
+    //     },
+    //   ],
+    // });
 
     expect(response.body).toEqual(
       expect.objectContaining({
