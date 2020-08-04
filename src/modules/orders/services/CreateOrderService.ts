@@ -37,41 +37,46 @@ class CreateOrderService {
       throw new AppError('Customer does not exists.');
     }
 
-    const requestedProducts = await this.productsRepository.findAllById(
-      products.map(product => ({ id: product.id })),
+    const productsIDs = products.map(product => {
+      return { id: product.id };
+    });
+
+    const productsItems = await this.productsRepository.findAllById(
+      productsIDs,
     );
 
-    const selectedProducts = products.map(selectedProduct => {
-      const productExists = requestedProducts.find(
-        product => product.id === selectedProduct.id,
+    if (productsItems.length !== products.length) {
+      throw new AppError('Product missing');
+    }
+
+    const productsList = productsItems.map(productItem => {
+      const productList = products.find(
+        productFind => productFind.id === productItem.id,
       );
 
-      if (!productExists) {
-        throw new AppError(`Product ${selectedProduct.id} not found.`);
+      if (!productList) {
+        throw new AppError(`Product ${productItem.id} not found.`);
       }
 
-      if (
-        productExists.quantity === 0 ||
-        productExists.quantity <= selectedProduct.quantity
-      ) {
+      if (productItem.quantity < productList.quantity) {
         throw new AppError(
           `
-            Insufficient items in stock of product ${selectedProduct.id}.
-            There is only ${productExists.quantity} in stock.
+            Insufficient items in stock of product ${productList.id}.
+            There is only ${productList.quantity} in stock.
           `,
         );
       }
 
       return {
-        product_id: selectedProduct.id,
-        price: productExists.price,
-        quantity: selectedProduct.quantity,
+        product_id: productItem.id,
+        price: productItem.price,
+        quantity: productList.quantity,
       };
     });
 
     const order = await this.ordersRepository.create({
       customer,
-      products: selectedProducts,
+      products: productsList,
     });
 
     await this.productsRepository.updateQuantity(products);
